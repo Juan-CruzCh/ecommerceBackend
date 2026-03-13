@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"ecommerceBackend/src/core/enum"
 	appUtils "ecommerceBackend/src/core/utils"
 	"ecommerceBackend/src/module/producto/dto"
 	"ecommerceBackend/src/module/producto/model"
@@ -37,6 +38,7 @@ func (s *Producto) CrearProducto(ctx context.Context, producto *dto.ProductoDto)
 		Destacado:   *producto.Destacado,
 		Fecha:       appUtils.FechaHoraBolivia(),
 		Publico:     *producto.Publico,
+		Flag:        enum.FlagNuevo,
 	}
 	resultado, err := s.productoRepository.CrearProducto(ctx, &body)
 	if err != nil {
@@ -80,7 +82,7 @@ func (s *Producto) CrearVarianteProducto(talla, color string, producto bson.Obje
 			Path:             *img,
 			Fecha:            appUtils.FechaHoraBolivia(),
 		}
-		fmt.Println(imagen)
+
 		s.ImagenRepository.CrearImgen(ctx, &imagen)
 	}
 	data := map[string]string{

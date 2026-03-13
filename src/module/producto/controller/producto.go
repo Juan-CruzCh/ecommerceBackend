@@ -2,10 +2,12 @@ package controller
 
 import (
 	"context"
-	"ecommerceBackend/src/core/utils"
+	appUtils "ecommerceBackend/src/core/utils"
 	"ecommerceBackend/src/module/producto/dto"
 	"ecommerceBackend/src/module/producto/service"
+	productoUtils "ecommerceBackend/src/module/producto/utils"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -31,20 +33,20 @@ func (c *Producto) CrearProducto(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&body)
 	if err != nil {
-		utils.ResponseJSON(w, http.StatusBadRequest, map[string]string{"mensaje": err.Error()})
+		appUtils.ResponseJSON(w, http.StatusBadRequest, map[string]string{"mensaje": err.Error()})
 		return
 	}
 	err = c.Validate.Struct(body)
 	if err != nil {
-		utils.ResponseJSON(w, http.StatusBadRequest, map[string]string{"mensaje": err.Error()})
+		appUtils.ResponseJSON(w, http.StatusBadRequest, map[string]string{"mensaje": err.Error()})
 		return
 	}
 	resultado, err := c.productoService.CrearProducto(ctx, &body)
 	if err != nil {
-		utils.ResponseJSON(w, http.StatusBadRequest, map[string]string{"mensaje": err.Error()})
+		appUtils.ResponseJSON(w, http.StatusBadRequest, map[string]string{"mensaje": err.Error()})
 		return
 	}
-	utils.ResponseJSON(w, http.StatusCreated, resultado)
+	appUtils.ResponseJSON(w, http.StatusCreated, resultado)
 
 }
 
@@ -53,39 +55,45 @@ func (c *Producto) CrearVarianteProducto(w http.ResponseWriter, r *http.Request)
 	defer cancel()
 
 	err := r.ParseMultipartForm(32 << 20)
+
 	if err != nil {
-		utils.ResponseJSON(w, http.StatusBadRequest, map[string]string{"mensaje": "Archivos muy grandes"})
+		appUtils.ResponseJSON(w, http.StatusBadRequest, map[string]string{"mensaje": "Archivos muy grandes"})
 		return
 	}
 
 	talla := r.FormValue("talla")
 	if talla == "" {
-		utils.ResponseJSON(w, http.StatusBadRequest, map[string]string{"mensaje": "Talla es obligatorio"})
+		appUtils.ResponseJSON(w, http.StatusBadRequest, map[string]string{"mensaje": "Talla es obligatorio"})
 		return
 	}
 
 	color := r.FormValue("color")
 	if color == "" {
-		utils.ResponseJSON(w, http.StatusBadRequest, map[string]string{"mensaje": "Color es obligatorio"})
+		appUtils.ResponseJSON(w, http.StatusBadRequest, map[string]string{"mensaje": "Color es obligatorio"})
 		return
 	}
 	producto := r.FormValue("producto")
-	productoId, err := utils.ValidadIdMongo(producto)
+	productoId, err := appUtils.ValidadIdMongo(producto)
 	if err != nil {
-		utils.ResponseJSON(w, http.StatusBadRequest, map[string]string{"mensaje": "Color es obligatorio"})
+		appUtils.ResponseJSON(w, http.StatusBadRequest, map[string]string{"mensaje": "Color es obligatorio"})
 		return
 	}
 
 	files := r.MultipartForm.File["imagenes"]
+	fmt.Println(files)
 	if len(files) == 0 {
-		utils.ResponseJSON(w, http.StatusBadRequest, map[string]string{"mensaje": "Debes subir al menos una imagen"})
+		appUtils.ResponseJSON(w, http.StatusBadRequest, map[string]string{"mensaje": "Debes subir al menos una imagen"})
 		return
 	}
-
+	err = productoUtils.ValidarExtensiones(files)
+	if err != nil {
+		appUtils.ResponseJSON(w, http.StatusBadRequest, map[string]string{"mensaje": err.Error()})
+		return
+	}
 	resultado, err := c.productoService.CrearVarianteProducto(talla, color, *productoId, files, ctx)
 	if err != nil {
-		utils.ResponseJSON(w, http.StatusBadRequest, map[string]string{"mensaje": err.Error()})
+		appUtils.ResponseJSON(w, http.StatusBadRequest, map[string]string{"mensaje": err.Error()})
 		return
 	}
-	utils.ResponseJSON(w, http.StatusCreated, resultado)
+	appUtils.ResponseJSON(w, http.StatusCreated, resultado)
 }

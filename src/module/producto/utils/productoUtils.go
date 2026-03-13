@@ -7,6 +7,7 @@ import (
 	"mime/multipart"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -24,7 +25,6 @@ func GuardarImagen(imagen *multipart.FileHeader) (nombreImg *string, err error) 
 	ext := filepath.Ext(imagen.Filename)
 	timestamp := time.Now().UnixNano() / 1000
 	nombreUnico := fmt.Sprintf("%d%s", timestamp, ext)
-	fmt.Println(nombreUnico)
 	out, err := os.Create(filepath.Join(uploadDir, nombreUnico))
 	if err != nil {
 		fmt.Println(err)
@@ -38,4 +38,21 @@ func GuardarImagen(imagen *multipart.FileHeader) (nombreImg *string, err error) 
 	}
 
 	return &nombreUnico, nil
+}
+
+func ValidarExtensiones(imagen []*multipart.FileHeader) error {
+	extPermitidas := map[string]bool{
+		".jpg":  true,
+		".jpeg": true,
+		".png":  true,
+		".webp": true,
+	}
+	for _, file := range imagen {
+		ext := strings.ToLower(filepath.Ext(file.Filename))
+		if !extPermitidas[ext] {
+			return fmt.Errorf("la extensión %s no está permitida", ext)
+		}
+
+	}
+	return nil
 }

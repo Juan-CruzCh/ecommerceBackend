@@ -9,11 +9,12 @@ import (
 
 type Producto struct {
 	ID          bson.ObjectID `bson:"_id,omitempty"`
+	Codigo      string        `bson:"codigo"`
 	Nombre      string        `bson:"nombre"`
 	Descripcion string        `bson:"Descripcion"`
 	Categoria   bson.ObjectID `bson:"categoria"`
 	Fecha       time.Time     `bson:"fecha"`
-	flag        enum.FlagE    `bson:"flag"`
+	Flag        enum.FlagE    `bson:"flag"`
 	Publico     bool          `bson:"publico"`
 	Destacado   bool          `bson:"destacado"`
 }

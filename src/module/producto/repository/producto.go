@@ -5,6 +5,7 @@ import (
 	"ecommerceBackend/src/core/enum"
 	"ecommerceBackend/src/module/producto/model"
 	"errors"
+	"strconv"
 
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -15,6 +16,7 @@ type Producto interface {
 	EliminarProducto(ctx context.Context)
 	EditarProducto(ctx context.Context)
 	ListarProducto(ctx context.Context)
+	countDocumentsProducto(ctx context.Context) (int, error)
 }
 
 type producto struct {
@@ -31,14 +33,30 @@ func NewProductoRepository(db *mongo.Database) Producto {
 
 func (r *producto) CrearProducto(ctx context.Context, producto *model.Producto) (*mongo.InsertOneResult, error) {
 	cantidad, err := r.collection.CountDocuments(ctx, bson.M{"nombre": producto.Nombre, "flag": enum.FlagNuevo})
+
 	if cantidad > 0 {
+
 		return nil, errors.New("El producto ya existe")
 	}
+	countDocumentsProducto, err := r.countDocumentsProducto(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	producto.Codigo = "PROD-" + strconv.Itoa(countDocumentsProducto)
 	resultado, err := r.collection.InsertOne(ctx, producto)
 	if err != nil {
 		return nil, err
 	}
 	return resultado, nil
+}
+func (r *producto) countDocumentsProducto(ctx context.Context) (int, error) {
+	cantidad, err := r.collection.CountDocuments(ctx, bson.M{})
+	if err != nil {
+		return 0, err
+	}
+	return int(cantidad + 1), nil
+
 }
 
 func (r *producto) EliminarProducto(ctx context.Context) {
