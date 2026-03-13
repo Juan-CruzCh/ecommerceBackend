@@ -12,7 +12,6 @@ type VarianteProducto struct {
 	Talla    string        `bson:"talla"`
 	Color    string        `bson:"color"`
 	Producto bson.ObjectID `bson:"producto"`
-	Imagenes []string      `bson:"imagenes"`
 	Fecha    time.Time     `bson:"fecha"`
 	flag     enum.FlagE    `bson:"flag"`
 }

@@ -49,6 +49,7 @@ type Repositories struct {
 	usuarioRepository          usuarioRepository.Usuario
 	ventaRepository            ventaRepository.Venta
 	detalleVentaRepository     ventaRepository.DetalleVenta
+	imagenRepository           productoRepository.Imagen
 }
 type App struct {
 	ServerMux    *http.ServeMux
@@ -66,11 +67,12 @@ func NewRepositories(db *mongo.Database) *Repositories {
 		usuarioRepository:          usuarioRepository.NewUsuarioRepository(db),
 		ventaRepository:            ventaRepository.NewVentaRepository(db),
 		detalleVentaRepository:     ventaRepository.NewDetalleVentaRepository(db),
+		imagenRepository:           productoRepository.NewImagenRepository(db),
 	}
 }
 
 func NewApp(urlMongo string) *App {
-	db, _, err := config.ConnectMongo(urlMongo, "marissa")
+	db, _, err := config.ConnectMongo(urlMongo, "kanna")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -110,7 +112,7 @@ func initCliente(app *App) {
 }
 
 func initProducto(app *App) {
-	service := productoService.NewProductoService(app.Repositories.productoRepository, app.Repositories.varianteProductoRepository)
+	service := productoService.NewProductoService(app.Repositories.productoRepository, app.Repositories.varianteProductoRepository, app.Repositories.imagenRepository)
 	controller := productoController.NewProductoController(&service, app.Validate)
 	productoRouter.NewProductoRouter(app.ServerMux, &controller)
 }

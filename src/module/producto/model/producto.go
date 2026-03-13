@@ -14,5 +14,6 @@ type Producto struct {
 	Categoria   bson.ObjectID `bson:"categoria"`
 	Fecha       time.Time     `bson:"fecha"`
 	flag        enum.FlagE    `bson:"flag"`
+	Publico     bool          `bson:"publico"`
 	Destacado   bool          `bson:"destacado"`
 }

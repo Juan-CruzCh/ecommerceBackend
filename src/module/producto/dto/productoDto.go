@@ -7,4 +7,5 @@ type ProductoDto struct {
 	Descripcion string        `json:"descripcion" validate:"required"`
 	Categoria   bson.ObjectID `json:"categoria" validate:"required"`
 	Destacado   *bool         `json:"destacado" validate:"required"`
+	Publico     *bool         `json:"publico" validate:"required"`
 }
