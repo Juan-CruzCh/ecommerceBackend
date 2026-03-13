@@ -86,6 +86,7 @@ func NewApp(urlMongo string) *App {
 	}
 	initCategoria(app)
 	initProducto(app)
+	initUsuario(app)
 	return app
 }
 
@@ -124,13 +125,15 @@ func initStock(app *App) {
 }
 
 func initUsuario(app *App) {
-	service := usuarioService.NewUsuarioService(&app.Repositories.usuarioRepository)
+	service := usuarioService.NewUsuarioService(app.Repositories.usuarioRepository)
 	controller := usuarioController.NewUsuarioController(&service)
 	usuarioRouter.NewUsuarioRouter(app.ServerMux, &controller)
+
 }
 
 func initVenta(app *App) {
 	service := ventaService.NewVentaService(&app.Repositories.ventaRepository)
 	controller := ventaController.NewVentaController(&service)
 	ventaRouter.NewVentaRouter(app.ServerMux, &controller)
+
 }
