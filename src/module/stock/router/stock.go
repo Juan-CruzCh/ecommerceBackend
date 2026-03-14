@@ -6,5 +6,5 @@ import (
 )
 
 func NewStockRouter(mux *http.ServeMux, controller *controller.Stock) {
-
+	mux.HandleFunc("POST /api/stock", controller.CrearStock)
 }

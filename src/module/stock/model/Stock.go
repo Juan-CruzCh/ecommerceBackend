@@ -14,5 +14,5 @@ type Stock struct {
 	VarianteProducto bson.ObjectID `bson:"varianteProducto"`
 	Producto         bson.ObjectID `bson:"producto"`
 	Fecha            time.Time     `bson:"fecha"`
-	flag             enum.FlagE    `bson:"flag"`
+	Flag             enum.FlagE    `bson:"flag"`
 }

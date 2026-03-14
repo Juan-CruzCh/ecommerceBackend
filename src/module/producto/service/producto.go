@@ -9,7 +9,6 @@ import (
 	"ecommerceBackend/src/module/producto/repository"
 	productoUtils "ecommerceBackend/src/module/producto/utils"
 	"errors"
-	"fmt"
 	"mime/multipart"
 
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -29,7 +28,7 @@ func NewProductoService(productoRepository repository.Producto, varianteProducto
 	}
 }
 
-func (s *Producto) CrearProducto(ctx context.Context, producto *dto.ProductoDto) (map[string]string, error) {
+func (s *Producto) CrearProducto(producto *dto.ProductoDto, ctx context.Context) (map[string]string, error) {
 
 	var body model.Producto = model.Producto{
 		Nombre:      producto.Nombre,
@@ -55,11 +54,11 @@ func (s *Producto) CrearProducto(ctx context.Context, producto *dto.ProductoDto)
 	return data, nil
 }
 
-func (s *Producto) CrearVarianteProducto(talla, color string, producto bson.ObjectID, imagenes []*multipart.FileHeader, ctx context.Context) (map[string]string, error) {
+func (s *Producto) CrearVarianteProducto(body *dto.VarianteProductoDto, ctx context.Context) (map[string]string, error) {
 	variante := model.VarianteProducto{
-		Talla:    talla,
-		Color:    color,
-		Producto: producto,
+		Talla:    body.Talla,
+		Color:    body.Talla,
+		Producto: body.Producto,
 		Fecha:    appUtils.FechaHoraBolivia(),
 	}
 	resultado, err := s.varianteProductoRepository.CrearVarianteProducto(ctx, &variante)
@@ -70,23 +69,29 @@ func (s *Producto) CrearVarianteProducto(talla, color string, producto bson.Obje
 	if !ok {
 		return nil, errors.New("Error de parseo")
 	}
+
+	data := map[string]string{
+		"productoVariante": varianteId.Hex(),
+	}
+	return data, nil
+}
+func (s *Producto) SubirImagenesProducto(variante *bson.ObjectID, imagenes []*multipart.FileHeader, ctx context.Context) error {
+
 	for _, v := range imagenes {
 
 		img, err := productoUtils.GuardarImagen(v)
 		if err != nil {
-			fmt.Println(err.Error())
+
 		}
 		imagen := model.Imagen{
 
-			VarianteProducto: varianteId,
+			VarianteProducto: *variante,
 			Path:             *img,
 			Fecha:            appUtils.FechaHoraBolivia(),
 		}
 
 		s.ImagenRepository.CrearImgen(ctx, &imagen)
 	}
-	data := map[string]string{
-		"productoVariante": varianteId.Hex(),
-	}
-	return data, nil
+
+	return nil
 }

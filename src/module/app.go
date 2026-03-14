@@ -87,6 +87,7 @@ func NewApp(urlMongo string) *App {
 	initCategoria(app)
 	initProducto(app)
 	initUsuario(app)
+	initStock(app)
 	return app
 }
 
@@ -119,8 +120,8 @@ func initProducto(app *App) {
 }
 
 func initStock(app *App) {
-	service := stockService.NewStockService(&app.Repositories.stockRepository)
-	controller := stockController.NewStockController(&service)
+	service := stockService.NewStockService(app.Repositories.stockRepository)
+	controller := stockController.NewStockController(&service, app.Validate)
 	stockRouter.NewStockRouter(app.ServerMux, &controller)
 }
 
