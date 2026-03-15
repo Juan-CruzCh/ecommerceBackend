@@ -2,6 +2,7 @@ package controller
 
 import (
 	"context"
+	"ecommerceBackend/src/core/utils"
 	appUtils "ecommerceBackend/src/core/utils"
 	"ecommerceBackend/src/module/producto/dto"
 	"ecommerceBackend/src/module/producto/service"
@@ -77,10 +78,22 @@ func (c *Producto) SubirImgenesProducto(w http.ResponseWriter, r *http.Request) 
 	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
 	defer cancel()
 	err := r.ParseMultipartForm(32 << 20)
+	if err != nil {
+		appUtils.ResponseJSON(w, http.StatusBadRequest, map[string]string{"mensaje": err.Error()})
+		return
+	}
+
 	productoVariante := r.FormValue("productoVariante")
 	productoVarianteId, err := appUtils.ValidadIdMongo(productoVariante)
 	if err != nil {
-		appUtils.ResponseJSON(w, http.StatusBadRequest, map[string]string{"mensaje": "Producto es obligatorio"})
+		appUtils.ResponseJSON(w, http.StatusBadRequest, map[string]string{"mensaje": "productoVariante es obligatorio"})
+		return
+	}
+
+	producto := r.FormValue("producto")
+	productoId, err := appUtils.ValidadIdMongo(producto)
+	if err != nil {
+		appUtils.ResponseJSON(w, http.StatusBadRequest, map[string]string{"mensaje": "producto es obligatorio"})
 		return
 	}
 
@@ -94,7 +107,7 @@ func (c *Producto) SubirImgenesProducto(w http.ResponseWriter, r *http.Request) 
 		appUtils.ResponseJSON(w, http.StatusBadRequest, map[string]string{"mensaje": err.Error()})
 		return
 	}
-	err = c.productoService.SubirImagenesProducto(productoVarianteId, files, ctx)
+	err = c.productoService.SubirImagenesProducto(productoId, productoVarianteId, files, ctx)
 	if err != nil {
 		appUtils.ResponseJSON(w, http.StatusBadRequest, map[string]string{"mensaje": err.Error()})
 		return
@@ -140,6 +153,36 @@ func (c *Producto) ListarImagenes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	data, err := c.productoService.ListarImagenes(varianteProductoId, ctx)
+	if err != nil {
+		appUtils.ResponseJSON(w, http.StatusBadRequest, map[string]string{"mensaje": err.Error()})
+		return
+	}
+	appUtils.ResponseJSON(w, http.StatusOK, data)
+}
+func (c *Producto) ListarProductosPublico(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
+	defer cancel()
+	destacado := r.URL.Query().Get("destacado")
+	categoria := r.URL.Query().Get("categoria")
+
+	data, err := c.productoService.ListarProductosPublico(destacado, categoria, ctx)
+	if err != nil {
+		appUtils.ResponseJSON(w, http.StatusBadRequest, map[string]string{"mensaje": err.Error()})
+		return
+	}
+	appUtils.ResponseJSON(w, http.StatusOK, data)
+}
+
+func (c *Producto) ListarProductosPublicoDetalle(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
+	defer cancel()
+	producto := r.PathValue("producto")
+	productoId, err := utils.ValidadIdMongo(producto)
+	if err != nil {
+		appUtils.ResponseJSON(w, http.StatusBadRequest, map[string]string{"mensaje": err.Error()})
+		return
+	}
+	data, err := c.productoService.ListarProductosPublicoDetalle(productoId, ctx)
 	if err != nil {
 		appUtils.ResponseJSON(w, http.StatusBadRequest, map[string]string{"mensaje": err.Error()})
 		return

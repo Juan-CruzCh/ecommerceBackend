@@ -31,13 +31,15 @@ func NewProductoService(productoRepository repository.Producto, varianteProducto
 func (s *Producto) CrearProducto(producto *dto.ProductoDto, ctx context.Context) (map[string]string, error) {
 
 	var body model.Producto = model.Producto{
-		Nombre:      producto.Nombre,
-		Descripcion: producto.Descripcion,
-		Categoria:   producto.Categoria,
-		Destacado:   *producto.Destacado,
-		Fecha:       appUtils.FechaHoraBolivia(),
-		Publico:     *producto.Publico,
-		Flag:        enum.FlagNuevo,
+		Nombre:       producto.Nombre,
+		Descripcion:  producto.Descripcion,
+		Categoria:    producto.Categoria,
+		Destacado:    *producto.Destacado,
+		Fecha:        appUtils.FechaHoraBolivia(),
+		Publico:      *producto.Publico,
+		Flag:         enum.FlagNuevo,
+		PrecioCompra: producto.PrecioCompra,
+		PrecioVenta:  producto.PrecioVenta,
 	}
 	resultado, err := s.productoRepository.CrearProducto(ctx, &body)
 	if err != nil {
@@ -76,8 +78,7 @@ func (s *Producto) CrearVarianteProducto(body *dto.VarianteProductoDto, ctx cont
 	}
 	return data, nil
 }
-func (s *Producto) SubirImagenesProducto(variante *bson.ObjectID, imagenes []*multipart.FileHeader, ctx context.Context) error {
-
+func (s *Producto) SubirImagenesProducto(producto *bson.ObjectID, variante *bson.ObjectID, imagenes []*multipart.FileHeader, ctx context.Context) error {
 	for _, v := range imagenes {
 
 		img, err := productoUtils.GuardarImagen(v)
@@ -85,11 +86,12 @@ func (s *Producto) SubirImagenesProducto(variante *bson.ObjectID, imagenes []*mu
 
 		}
 		imagen := model.Imagen{
-
 			VarianteProducto: *variante,
 			Path:             *img,
 			Fecha:            appUtils.FechaHoraBolivia(),
 			Flag:             enum.FlagNuevo,
+			Producto:         *producto,
+			Principal:        false,
 		}
 
 		s.ImagenRepository.CrearImgen(ctx, &imagen)
@@ -116,6 +118,22 @@ func (s *Producto) ListarVarianteProducto(producto *bson.ObjectID, ctx context.C
 
 func (s *Producto) ListarImagenes(variante *bson.ObjectID, ctx context.Context) (*[]model.Imagen, error) {
 	data, err := s.ImagenRepository.ListarImagenes(variante, ctx)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
+func (s *Producto) ListarProductosPublico(descado string, categoria string, ctx context.Context) (*[]bson.M, error) {
+	data, err := s.productoRepository.ListarProductosPublico(descado, categoria, ctx)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
+func (s *Producto) ListarProductosPublicoDetalle(producto *bson.ObjectID, ctx context.Context) (*[]bson.M, error) {
+	data, err := s.productoRepository.ListarProductosPublicoDetalle(producto, ctx)
 	if err != nil {
 		return nil, err
 	}

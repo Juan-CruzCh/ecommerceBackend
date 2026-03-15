@@ -27,7 +27,6 @@ func (s *Stock) CrearStock(body *dto.DataStockDto, ctx context.Context) error {
 			if err == mongo.ErrNoDocuments {
 				data := model.Stock{
 					Cantidad:         v.Cantidad,
-					Precio:           v.Precio,
 					VarianteProducto: v.VarianteProducto,
 					Producto:         v.Producto,
 					Fecha:            utils.FechaHoraBolivia(),

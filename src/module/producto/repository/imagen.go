@@ -12,6 +12,7 @@ import (
 type Imagen interface {
 	CrearImgen(ctx context.Context, imagen *model.Imagen)
 	ListarImagenes(variante *bson.ObjectID, ctx context.Context) (*[]model.Imagen, error)
+	AsignarImagenPrincipal(idImagen *bson.ObjectID, ctx context.Context) error
 }
 
 type imagen struct {
@@ -28,6 +29,52 @@ func NewImagenRepository(db *mongo.Database) Imagen {
 
 func (r *imagen) CrearImgen(ctx context.Context, imagen *model.Imagen) {
 	r.collection.InsertOne(ctx, imagen)
+}
+
+func (r *imagen) AsignarImagenPrincipal(idImagen *bson.ObjectID, ctx context.Context) error {
+
+	var imagen struct {
+		producto bson.ObjectID `bson:"producto"`
+	}
+
+	err := r.collection.FindOne(
+		ctx,
+		bson.M{"_id": idImagen},
+	).Decode(&imagen)
+
+	if err != nil {
+		return err
+	}
+
+	_, err = r.collection.UpdateMany(
+		ctx,
+		bson.M{
+			"prodcuto": imagen.producto,
+		},
+		bson.M{
+			"$set": bson.M{
+				"principal": false,
+			},
+		},
+	)
+
+	if err != nil {
+		return err
+	}
+
+	_, err = r.collection.UpdateOne(
+		ctx,
+		bson.M{
+			"_id": idImagen,
+		},
+		bson.M{
+			"$set": bson.M{
+				"principal": true,
+			},
+		},
+	)
+
+	return err
 }
 
 func (r *imagen) ListarImagenes(variante *bson.ObjectID, ctx context.Context) (*[]model.Imagen, error) {

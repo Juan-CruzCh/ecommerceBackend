@@ -8,6 +8,8 @@ import (
 func NewProductoRouter(mux *http.ServeMux, controller *controller.Producto) {
 	fileServer := http.FileServer(http.Dir("./uploads"))
 	mux.HandleFunc("POST /api/producto", controller.CrearProducto)
+	mux.HandleFunc("GET /api/producto/publico", controller.ListarProductosPublico)
+	mux.HandleFunc("GET /api/producto/publico/detalle/{producto}", controller.ListarProductosPublicoDetalle)
 	mux.HandleFunc("GET /api/varianteProducto/{producto}", controller.ListarVarianteProducto)
 	mux.HandleFunc("GET /api/producto", controller.ListarProducto)
 	mux.HandleFunc("POST /api/varianteProducto", controller.CrearVarianteProducto)
