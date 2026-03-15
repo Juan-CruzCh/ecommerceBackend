@@ -57,9 +57,10 @@ func (s *Producto) CrearProducto(producto *dto.ProductoDto, ctx context.Context)
 func (s *Producto) CrearVarianteProducto(body *dto.VarianteProductoDto, ctx context.Context) (map[string]string, error) {
 	variante := model.VarianteProducto{
 		Talla:    body.Talla,
-		Color:    body.Talla,
+		Color:    body.Color,
 		Producto: body.Producto,
 		Fecha:    appUtils.FechaHoraBolivia(),
+		Flag:     enum.FlagNuevo,
 	}
 	resultado, err := s.varianteProductoRepository.CrearVarianteProducto(ctx, &variante)
 	if err != nil {
@@ -88,10 +89,35 @@ func (s *Producto) SubirImagenesProducto(variante *bson.ObjectID, imagenes []*mu
 			VarianteProducto: *variante,
 			Path:             *img,
 			Fecha:            appUtils.FechaHoraBolivia(),
+			Flag:             enum.FlagNuevo,
 		}
 
 		s.ImagenRepository.CrearImgen(ctx, &imagen)
 	}
 
 	return nil
+}
+
+func (s *Producto) ListarProductos(ctx context.Context) (*[]bson.M, error) {
+	data, err := s.productoRepository.ListarProducto(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
+func (s *Producto) ListarVarianteProducto(producto *bson.ObjectID, ctx context.Context) (*[]model.VarianteProducto, error) {
+	data, err := s.varianteProductoRepository.ListarVarianteProducto(producto, ctx)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
+func (s *Producto) ListarImagenes(variante *bson.ObjectID, ctx context.Context) (*[]model.Imagen, error) {
+	data, err := s.ImagenRepository.ListarImagenes(variante, ctx)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
 }

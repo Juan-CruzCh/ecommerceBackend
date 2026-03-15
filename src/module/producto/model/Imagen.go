@@ -8,9 +8,9 @@ import (
 )
 
 type Imagen struct {
-	ID               bson.ObjectID `bson:"_id,omitempty"`
+	ID               bson.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
 	VarianteProducto bson.ObjectID `bson:"varianteProducto" json:"varianteProducto"`
 	Path             string        `bson:"path" json:"path"`
-	Fecha            time.Time     `bson:"fecha"`
-	flag             enum.FlagE    `bson:"flag"`
+	Fecha            time.Time     `bson:"fecha" json:"fecha"`
+	Flag             enum.FlagE    `bson:"flag" json:"flag"`
 }

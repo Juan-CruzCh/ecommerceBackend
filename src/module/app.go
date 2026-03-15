@@ -2,6 +2,7 @@ package src
 
 import (
 	"ecommerceBackend/src/core/config"
+	"ecommerceBackend/src/core/middleware"
 	categoriaRepository "ecommerceBackend/src/module/categoria/repository"
 	clienteRepository "ecommerceBackend/src/module/cliente/repository"
 
@@ -94,8 +95,8 @@ func NewApp(urlMongo string) *App {
 func (app *App) Run(port string) {
 	log.Printf("Servidor corriendo en http://localhost:%s", port)
 	fmt.Println("Servidor corriendo en http://localhost:%s", port)
-
-	err := http.ListenAndServe(":"+port, app.ServerMux)
+	configCors := middleware.EnableCORS(app.ServerMux)
+	err := http.ListenAndServe(":"+port, configCors)
 	if err != nil {
 		log.Fatal(err)
 	}

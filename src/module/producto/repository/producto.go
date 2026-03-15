@@ -3,8 +3,10 @@ package repository
 import (
 	"context"
 	"ecommerceBackend/src/core/enum"
+	"ecommerceBackend/src/core/utils"
 	"ecommerceBackend/src/module/producto/model"
 	"errors"
+	"fmt"
 	"strconv"
 
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -15,7 +17,7 @@ type Producto interface {
 	CrearProducto(ctx context.Context, producto *model.Producto) (*mongo.InsertOneResult, error)
 	EliminarProducto(ctx context.Context)
 	EditarProducto(ctx context.Context)
-	ListarProducto(ctx context.Context)
+	ListarProducto(ctx context.Context) (*[]bson.M, error)
 	countDocumentsProducto(ctx context.Context) (int, error)
 }
 
@@ -67,6 +69,58 @@ func (r *producto) EditarProducto(ctx context.Context) {
 
 }
 
-func (r *producto) ListarProducto(ctx context.Context) {
+func (r *producto) ListarProducto(ctx context.Context) (*[]bson.M, error) {
 
+	var pipeline mongo.Pipeline = mongo.Pipeline{
+		bson.D{
+			{
+				Key: "$match", Value: bson.D{
+					{
+						Key: "flag", Value: enum.FlagNuevo,
+					},
+				},
+			},
+		},
+		utils.Lookup("Categoria", "categoria", "_id", "categoria"),
+
+		bson.D{
+			{
+				Key: "$project", Value: bson.D{
+					{
+						Key: "_id", Value: 1,
+					},
+					{
+						Key: "codigo", Value: 1,
+					},
+					{
+						Key: "nombre", Value: 1,
+					},
+					{
+						Key: "categoria", Value: utils.ArrayElemAt("$categoria.nombre", 0),
+					},
+					{
+						Key: "publico", Value: 1,
+					},
+					{
+						Key: "destacado", Value: 1,
+					},
+				},
+			},
+		},
+	}
+
+	cursor, err := r.collection.Aggregate(ctx, pipeline)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer cursor.Close(ctx)
+	var data []bson.M = []bson.M{}
+	err = cursor.All(ctx, &data)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+	return &data, nil
 }

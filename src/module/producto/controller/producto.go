@@ -77,8 +77,8 @@ func (c *Producto) SubirImgenesProducto(w http.ResponseWriter, r *http.Request) 
 	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
 	defer cancel()
 	err := r.ParseMultipartForm(32 << 20)
-	producto := r.FormValue("producto")
-	productoId, err := appUtils.ValidadIdMongo(producto)
+	productoVariante := r.FormValue("productoVariante")
+	productoVarianteId, err := appUtils.ValidadIdMongo(productoVariante)
 	if err != nil {
 		appUtils.ResponseJSON(w, http.StatusBadRequest, map[string]string{"mensaje": "Producto es obligatorio"})
 		return
@@ -94,10 +94,55 @@ func (c *Producto) SubirImgenesProducto(w http.ResponseWriter, r *http.Request) 
 		appUtils.ResponseJSON(w, http.StatusBadRequest, map[string]string{"mensaje": err.Error()})
 		return
 	}
-	err = c.productoService.SubirImagenesProducto(productoId, files, ctx)
+	err = c.productoService.SubirImagenesProducto(productoVarianteId, files, ctx)
 	if err != nil {
 		appUtils.ResponseJSON(w, http.StatusBadRequest, map[string]string{"mensaje": err.Error()})
 		return
 	}
-	appUtils.ResponseJSON(w, http.StatusOK, map[string]string{"mensaje": "registrado"})
+	appUtils.ResponseJSON(w, http.StatusCreated, map[string]string{"mensaje": "registrado"})
+}
+
+func (c *Producto) ListarProducto(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
+	defer cancel()
+	data, err := c.productoService.ListarProductos(ctx)
+	if err != nil {
+		appUtils.ResponseJSON(w, http.StatusBadRequest, map[string]string{"mensaje": err.Error()})
+		return
+	}
+	appUtils.ResponseJSON(w, http.StatusOK, data)
+}
+
+func (c *Producto) ListarVarianteProducto(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
+	defer cancel()
+	producto := r.PathValue("producto")
+	productoId, err := appUtils.ValidadIdMongo(producto)
+	if err != nil {
+		appUtils.ResponseJSON(w, http.StatusBadRequest, map[string]string{"mensaje": err.Error()})
+		return
+	}
+	data, err := c.productoService.ListarVarianteProducto(productoId, ctx)
+	if err != nil {
+		appUtils.ResponseJSON(w, http.StatusBadRequest, map[string]string{"mensaje": err.Error()})
+		return
+	}
+	appUtils.ResponseJSON(w, http.StatusOK, data)
+}
+
+func (c *Producto) ListarImagenes(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
+	defer cancel()
+	varianteProducto := r.PathValue("varianteProducto")
+	varianteProductoId, err := appUtils.ValidadIdMongo(varianteProducto)
+	if err != nil {
+		appUtils.ResponseJSON(w, http.StatusBadRequest, map[string]string{"mensaje": err.Error()})
+		return
+	}
+	data, err := c.productoService.ListarImagenes(varianteProductoId, ctx)
+	if err != nil {
+		appUtils.ResponseJSON(w, http.StatusBadRequest, map[string]string{"mensaje": err.Error()})
+		return
+	}
+	appUtils.ResponseJSON(w, http.StatusOK, data)
 }
