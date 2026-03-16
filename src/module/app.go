@@ -10,12 +10,14 @@ import (
 	stockRepository "ecommerceBackend/src/module/stock/repository"
 	usuarioRepository "ecommerceBackend/src/module/usuario/repository"
 
+	tallaRepository "ecommerceBackend/src/module/talla/repository"
 	ventaRepository "ecommerceBackend/src/module/venta/repository"
 
 	categoriaService "ecommerceBackend/src/module/categoria/service"
 	clienteService "ecommerceBackend/src/module/cliente/service"
 	productoService "ecommerceBackend/src/module/producto/service"
 	stockService "ecommerceBackend/src/module/stock/service"
+	tallaService "ecommerceBackend/src/module/talla/service"
 	usuarioService "ecommerceBackend/src/module/usuario/service"
 	ventaService "ecommerceBackend/src/module/venta/service"
 
@@ -23,6 +25,7 @@ import (
 	clienteController "ecommerceBackend/src/module/cliente/controller"
 	productoController "ecommerceBackend/src/module/producto/controller"
 	stockController "ecommerceBackend/src/module/stock/controller"
+	tallaController "ecommerceBackend/src/module/talla/controller"
 	usuarioController "ecommerceBackend/src/module/usuario/controller"
 	ventaController "ecommerceBackend/src/module/venta/controller"
 
@@ -33,6 +36,8 @@ import (
 	usuarioRouter "ecommerceBackend/src/module/usuario/router"
 	ventaRouter "ecommerceBackend/src/module/venta/router"
 
+	tallaRouter "ecommerceBackend/src/module/talla/router"
+
 	"fmt"
 	"log"
 	"net/http"
@@ -42,15 +47,16 @@ import (
 )
 
 type Repositories struct {
-	categoriaRepository        categoriaRepository.Categoria
-	clienteRepository          clienteRepository.Cliente
-	productoRepository         productoRepository.Producto
-	varianteProductoRepository productoRepository.VarianteProducto
-	stockRepository            stockRepository.Stock
-	usuarioRepository          usuarioRepository.Usuario
-	ventaRepository            ventaRepository.Venta
-	detalleVentaRepository     ventaRepository.DetalleVenta
-	imagenRepository           productoRepository.Imagen
+	categoriaRepository     categoriaRepository.Categoria
+	clienteRepository       clienteRepository.Cliente
+	productoRepository      productoRepository.Producto
+	productoTallaRepository productoRepository.ProductoTalla
+	stockRepository         stockRepository.Stock
+	usuarioRepository       usuarioRepository.Usuario
+	ventaRepository         ventaRepository.Venta
+	detalleVentaRepository  ventaRepository.DetalleVenta
+	imagenRepository        productoRepository.Imagen
+	tallaRepository         tallaRepository.Talla
 }
 type App struct {
 	ServerMux    *http.ServeMux
@@ -60,15 +66,16 @@ type App struct {
 
 func NewRepositories(db *mongo.Database) *Repositories {
 	return &Repositories{
-		categoriaRepository:        categoriaRepository.NewCategoriaRepository(db),
-		clienteRepository:          clienteRepository.NewClienteRepository(db),
-		productoRepository:         productoRepository.NewProductoRepository(db),
-		varianteProductoRepository: productoRepository.NewVarianteProductoRepository(db),
-		stockRepository:            stockRepository.NewStockRepository(db),
-		usuarioRepository:          usuarioRepository.NewUsuarioRepository(db),
-		ventaRepository:            ventaRepository.NewVentaRepository(db),
-		detalleVentaRepository:     ventaRepository.NewDetalleVentaRepository(db),
-		imagenRepository:           productoRepository.NewImagenRepository(db),
+		categoriaRepository:     categoriaRepository.NewCategoriaRepository(db),
+		clienteRepository:       clienteRepository.NewClienteRepository(db),
+		productoRepository:      productoRepository.NewProductoRepository(db),
+		productoTallaRepository: productoRepository.NewProductoTallaRepository(db),
+		stockRepository:         stockRepository.NewStockRepository(db),
+		usuarioRepository:       usuarioRepository.NewUsuarioRepository(db),
+		ventaRepository:         ventaRepository.NewVentaRepository(db),
+		detalleVentaRepository:  ventaRepository.NewDetalleVentaRepository(db),
+		imagenRepository:        productoRepository.NewImagenRepository(db),
+		tallaRepository:         tallaRepository.NewTallaRepository(db),
 	}
 }
 
@@ -89,6 +96,7 @@ func NewApp(urlMongo string) *App {
 	initProducto(app)
 	initUsuario(app)
 	initStock(app)
+	initTalla(app)
 	return app
 }
 
@@ -115,13 +123,13 @@ func initCliente(app *App) {
 }
 
 func initProducto(app *App) {
-	service := productoService.NewProductoService(app.Repositories.productoRepository, app.Repositories.varianteProductoRepository, app.Repositories.imagenRepository)
+	service := productoService.NewProductoService(app.Repositories.productoRepository, app.Repositories.productoTallaRepository, app.Repositories.imagenRepository)
 	controller := productoController.NewProductoController(&service, app.Validate)
 	productoRouter.NewProductoRouter(app.ServerMux, &controller)
 }
 
 func initStock(app *App) {
-	service := stockService.NewStockService(app.Repositories.stockRepository)
+	service := stockService.NewStockService(app.Repositories.stockRepository, app.Repositories.productoTallaRepository)
 	controller := stockController.NewStockController(&service, app.Validate)
 	stockRouter.NewStockRouter(app.ServerMux, &controller)
 }
@@ -137,5 +145,11 @@ func initVenta(app *App) {
 	service := ventaService.NewVentaService(&app.Repositories.ventaRepository)
 	controller := ventaController.NewVentaController(&service)
 	ventaRouter.NewVentaRouter(app.ServerMux, &controller)
+
+}
+func initTalla(app *App) {
+	service := tallaService.NewTallaService(app.Repositories.tallaRepository)
+	controller := tallaController.NewTallaController(&service, app.Validate)
+	tallaRouter.NewTallaRouter(app.ServerMux, &controller)
 
 }

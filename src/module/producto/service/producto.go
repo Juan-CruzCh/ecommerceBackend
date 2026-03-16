@@ -15,16 +15,16 @@ import (
 )
 
 type Producto struct {
-	productoRepository         repository.Producto
-	varianteProductoRepository repository.VarianteProducto
-	ImagenRepository           repository.Imagen
+	productoRepository      repository.Producto
+	productoTallaRepository repository.ProductoTalla
+	imagenRepository        repository.Imagen
 }
 
-func NewProductoService(productoRepository repository.Producto, varianteProductoRepository repository.VarianteProducto, ImagenRepository repository.Imagen) Producto {
+func NewProductoService(productoRepository repository.Producto, productoTallRepository repository.ProductoTalla, imagenRepository repository.Imagen) Producto {
 	return Producto{
-		productoRepository:         productoRepository,
-		varianteProductoRepository: varianteProductoRepository,
-		ImagenRepository:           ImagenRepository,
+		productoRepository:      productoRepository,
+		productoTallaRepository: productoTallRepository,
+		imagenRepository:        imagenRepository,
 	}
 }
 
@@ -56,29 +56,7 @@ func (s *Producto) CrearProducto(producto *dto.ProductoDto, ctx context.Context)
 	return data, nil
 }
 
-func (s *Producto) CrearVarianteProducto(body *dto.VarianteProductoDto, ctx context.Context) (map[string]string, error) {
-	variante := model.VarianteProducto{
-		Talla:    body.Talla,
-		Color:    body.Color,
-		Producto: body.Producto,
-		Fecha:    appUtils.FechaHoraBolivia(),
-		Flag:     enum.FlagNuevo,
-	}
-	resultado, err := s.varianteProductoRepository.CrearVarianteProducto(ctx, &variante)
-	if err != nil {
-		return nil, err
-	}
-	varianteId, ok := resultado.InsertedID.(bson.ObjectID)
-	if !ok {
-		return nil, errors.New("Error de parseo")
-	}
-
-	data := map[string]string{
-		"productoVariante": varianteId.Hex(),
-	}
-	return data, nil
-}
-func (s *Producto) SubirImagenesProducto(producto *bson.ObjectID, variante *bson.ObjectID, imagenes []*multipart.FileHeader, ctx context.Context) error {
+func (s *Producto) SubirImagenesProducto(producto *bson.ObjectID, imagenes []*multipart.FileHeader, ctx context.Context) error {
 	for _, v := range imagenes {
 
 		img, err := productoUtils.GuardarImagen(v)
@@ -86,15 +64,14 @@ func (s *Producto) SubirImagenesProducto(producto *bson.ObjectID, variante *bson
 
 		}
 		imagen := model.Imagen{
-			VarianteProducto: *variante,
-			Path:             *img,
-			Fecha:            appUtils.FechaHoraBolivia(),
-			Flag:             enum.FlagNuevo,
-			Producto:         *producto,
-			Principal:        false,
+			Path:      *img,
+			Fecha:     appUtils.FechaHoraBolivia(),
+			Flag:      enum.FlagNuevo,
+			Producto:  *producto,
+			Principal: false,
 		}
 
-		s.ImagenRepository.CrearImgen(ctx, &imagen)
+		s.imagenRepository.CrearImgen(ctx, &imagen)
 	}
 
 	return nil
@@ -108,16 +85,8 @@ func (s *Producto) ListarProductos(ctx context.Context) (*[]bson.M, error) {
 	return data, nil
 }
 
-func (s *Producto) ListarVarianteProducto(producto *bson.ObjectID, ctx context.Context) (*[]model.VarianteProducto, error) {
-	data, err := s.varianteProductoRepository.ListarVarianteProducto(producto, ctx)
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
-}
-
-func (s *Producto) ListarImagenes(variante *bson.ObjectID, ctx context.Context) (*[]model.Imagen, error) {
-	data, err := s.ImagenRepository.ListarImagenes(variante, ctx)
+func (s *Producto) ListarImagenes(producto *bson.ObjectID, ctx context.Context) (*[]model.Imagen, error) {
+	data, err := s.imagenRepository.ListarImagenes(producto, ctx)
 	if err != nil {
 		return nil, err
 	}

@@ -7,7 +7,7 @@ type DataStockDto struct {
 }
 
 type StockDto struct {
-	Cantidad         int           `json:"cantidad" validate:"required,gt=0"`
-	VarianteProducto bson.ObjectID `json:"varianteProducto" validate:"required"`
-	Producto         bson.ObjectID `json:"producto" validate:"required"`
+	Cantidad int           `json:"cantidad" validate:"required,gt=0"`
+	Talla    bson.ObjectID `json:"talla" validate:"required"`
+	Producto bson.ObjectID `json:"producto" validate:"required"`
 }

@@ -11,7 +11,7 @@ import (
 
 type Imagen interface {
 	CrearImgen(ctx context.Context, imagen *model.Imagen)
-	ListarImagenes(variante *bson.ObjectID, ctx context.Context) (*[]model.Imagen, error)
+	ListarImagenes(producto *bson.ObjectID, ctx context.Context) (*[]model.Imagen, error)
 	AsignarImagenPrincipal(idImagen *bson.ObjectID, ctx context.Context) error
 }
 
@@ -77,8 +77,8 @@ func (r *imagen) AsignarImagenPrincipal(idImagen *bson.ObjectID, ctx context.Con
 	return err
 }
 
-func (r *imagen) ListarImagenes(variante *bson.ObjectID, ctx context.Context) (*[]model.Imagen, error) {
-	cursor, err := r.collection.Find(ctx, bson.M{"flag": enum.FlagNuevo, "varianteProducto": variante})
+func (r *imagen) ListarImagenes(producto *bson.ObjectID, ctx context.Context) (*[]model.Imagen, error) {
+	cursor, err := r.collection.Find(ctx, bson.M{"flag": enum.FlagNuevo, "producto": producto})
 	if err != nil {
 		return nil, err
 	}

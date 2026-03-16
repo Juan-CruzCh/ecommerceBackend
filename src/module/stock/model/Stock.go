@@ -8,10 +8,10 @@ import (
 )
 
 type Stock struct {
-	ID               bson.ObjectID `bson:"_id,omitempty"`
-	Cantidad         int           `bson:"cantidad"`
-	VarianteProducto bson.ObjectID `bson:"varianteProducto"`
-	Producto         bson.ObjectID `bson:"producto"`
-	Fecha            time.Time     `bson:"fecha"`
-	Flag             enum.FlagE    `bson:"flag"`
+	ID            bson.ObjectID `bson:"_id,omitempty"`
+	Cantidad      int           `bson:"cantidad"`
+	ProductoTalla bson.ObjectID `bson:"productoTalla"`
+	Producto      bson.ObjectID `bson:"producto"`
+	Fecha         time.Time     `bson:"fecha"`
+	Flag          enum.FlagE    `bson:"flag"`
 }

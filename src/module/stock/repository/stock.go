@@ -11,7 +11,7 @@ import (
 
 type Stock interface {
 	CrearStock(stock *model.Stock, tx context.Context) error
-	VerificarStock(producto *bson.ObjectID, productoVariante *bson.ObjectID, ctx context.Context) (*model.Stock, error)
+	VerificarStock(producto *bson.ObjectID, ProductoTalla *bson.ObjectID, ctx context.Context) (*model.Stock, error)
 	ActualizarStock(stock *bson.ObjectID, cantidad int, ctx context.Context) *mongo.SingleResult
 }
 
@@ -40,10 +40,10 @@ func (r *stock) ActualizarStock(stock *bson.ObjectID, cantidad int, ctx context.
 	return resultado
 }
 
-func (r *stock) VerificarStock(producto *bson.ObjectID, productoVariante *bson.ObjectID, ctx context.Context) (*model.Stock, error) {
+func (r *stock) VerificarStock(producto *bson.ObjectID, ProductoTalla *bson.ObjectID, ctx context.Context) (*model.Stock, error) {
 
 	var stock model.Stock = model.Stock{}
-	err := r.collection.FindOne(ctx, bson.M{"producto": producto, "varianteProducto": productoVariante, "flag": enum.FlagNuevo}).Decode(&stock)
+	err := r.collection.FindOne(ctx, bson.M{"producto": producto, "productoTalla": ProductoTalla, "flag": enum.FlagNuevo}).Decode(&stock)
 	if err != nil {
 		return nil, err
 	}

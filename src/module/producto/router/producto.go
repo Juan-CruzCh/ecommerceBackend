@@ -10,9 +10,9 @@ func NewProductoRouter(mux *http.ServeMux, controller *controller.Producto) {
 	mux.HandleFunc("POST /api/producto", controller.CrearProducto)
 	mux.HandleFunc("GET /api/producto/publico", controller.ListarProductosPublico)
 	mux.HandleFunc("GET /api/producto/publico/detalle/{producto}", controller.ListarProductosPublicoDetalle)
-	mux.HandleFunc("GET /api/varianteProducto/{producto}", controller.ListarVarianteProducto)
+
 	mux.HandleFunc("GET /api/producto", controller.ListarProducto)
-	mux.HandleFunc("POST /api/varianteProducto", controller.CrearVarianteProducto)
+
 	mux.HandleFunc("POST /api/imagenes", controller.SubirImgenesProducto)
 	mux.HandleFunc("GET /api/imagenes/{varianteProducto}", controller.ListarImagenes)
 
